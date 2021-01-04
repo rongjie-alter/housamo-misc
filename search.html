@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+code {
+  background: #f99;
+  padding: 2px;
+}
+</style>
+
+<a href="https://github.com/rongjie-alter/housamo-misc/">Source code</a>
+
+<h2>Filter</h2>
+
+<form id="form">
+<p>
+  <label>Number of characters (enter 0 for no restriction)</label>
+  <input type="number" name="nChar" min="0" value="0">
+</p>
+<p>
+  <label>Strip whitespace</label>
+  <input type="checkbox" name="whitespace" value="false">
+</p>
+<p>
+  <label>Regex</label>
+  <input type="text" name="regex">
+</p>
+
+<h3>Example regex string</h3>
+
+<ul>
+  <li><code>^.{1}i</code> Starts with any one character, followed by "i"</li>
+  <li><code>g$</code> Ends with "i"</li>
+  <li><code>a</code> Contains at least one "a"</li>
+  <li><code>^a.*n$</code> Starts with "a" and ends with "n"</li>
+</ul>
+
+<p>
+  <input type="submit" value="Search">
+</p>
+
+</form>
+
+<h2>Output</h2>
+
+<pre id="output"></pre>
+
+<script>
+let charas = [
+  "Aegir",
+  "Agyo",
+  "Ahab",
+  "Aizen",
+  "Algernon",
+  "Alice",
+  "Alp",
+  "Amatsumara",
+  "Andvari",
+  "Arachne",
+  "Arc",
+  "Arsalan",
+  "Ashigara",
+  "Astaroth",
+  "Asterius",
+  "Avarga",
+  "Azathoth",
+  "Azazel",
+  "Babalon",
+  "Bael",
+  "Balor",
+  "Barguest",
+  "Bathym",
+  "Behemoth",
+  "Benten",
+  "Bertro",
+  "Breke",
+  "Cait Sith",
+  "Chernobog",
+  "Choji",
+  "Christine",
+  "Claude",
+  "Cthugha",
+  "Cu Sith",
+  "Dagon",
+  "Daikoku",
+  "Ded",
+  "Duo",
+  "Durga",
+  "Ebisu",
+  "Echo",
+  "Eita",
+  "Ellie",
+  "Fenrir",
+  "Furufumi",
+  "Gabriel",
+  "Gandharva",
+  "Ganglie",
+  "Garmr",
+  "Goemon",
+  "Gullinbursti",
+  "Gunzo",
+  "Gyobu",
+  "Gyumao",
+  "Hakumen",
+  "Hanuman",
+  "Hati",
+  "Hephaestus",
+  "Heracles",
+  "Hogen",
+  "Hombre Tigre",
+  "Horkeu Kamui",
+  "Horus",
+  "Ibaraki",
+  "Ifrit",
+  "Ikutoshi",
+  "Itzamna",
+  "Jacob",
+  "Jambavan",
+  "Jinn",
+  "Jiraiya",
+  "Jugo",
+  "Kagutsuchi",
+  "Kalki",
+  "Kengo",
+  "Kenta",
+  "Kijimuna",
+  "Kimun Kamui",
+  "Korpokkur",
+  "Kotaro",
+  "Krampus",
+  "Kuniyoshi",
+  "Kurogane",
+  "Kyuma",
+  "Leanan Sidhe",
+  "Leib",
+  "Licho",
+  "Licht",
+  "Lucifuge",
+  "Macan",
+  "Makara",
+  "Marchosias",
+  "Marduk",
+  "Maria",
+  "Melusine",
+  "Mineaki",
+  "Moritaka",
+  "Motosumi",
+  "Musashi",
+  "Nekros & Bacchus",
+  "Nezha",
+  "Nobuharu",
+  "Nomad",
+  "Nyarlathotep",
+  "Oniwaka",
+  "Ophion",
+  "Orgus",
+  "Ose",
+  "Otohime",
+  "Oz",
+  "Pollux",
+  "Protagonist",
+  "R-19",
+  "Robinson",
+  "Ryota",
+  "Sanat Kumara",
+  "Seth",
+  "Shennong",
+  "Shino",
+  "Shinya",
+  "Shiro",
+  "Shiva",
+  "Shuichi",
+  "Shuten",
+  "Sitri",
+  "Snow",
+  "Sol",
+  "Surtr",
+  "Suzuka",
+  "Tadatomo",
+  "Tajikarao",
+  "Takemaru",
+  "Tanetomo",
+  "Tangaroa",
+  "Tanngrisnir",
+  "Taromaiti",
+  "Taurus Mask",
+  "Teda",
+  "Temujin",
+  "Tetsuox",
+  "Tetsuya",
+  "Tezcatlipoca",
+  "The Hero",
+  "Thunderbird",
+  "Toji",
+  "Tomte",
+  "Triton",
+  "Tsathoggua",
+  "Tsukuyomi",
+  "Tvastar",
+  "Typhon",
+  "Volos",
+  "Wakan Tanka",
+  "Xolotl",
+  "Yamasachihiko",
+  "Yasuyori",
+  "Yule",
+  "Zabaniyya",
+  "Zao",
+  "Ziz",
+
+  // GBJs
+  "Amaterasu",
+  "Curren",
+  "Doga",
+  "Dyonys",
+  "Elwe",
+  "Galahad",
+  "Gennou",
+  "Hreidmar",
+  "Jormungandr",
+  "Kirito",
+  "Klaus",
+  "Lena",
+  "Leo",
+  "Lil' Salomon",
+  "Linda",
+  "Mahakala",
+  "Mephistopheles",
+  "Michael",
+  "Midi",
+  "Mononobe",
+  "Narcissus",
+  "Nidhogg",
+  "Nogrim",
+  "Odin",
+  "Perun",
+  "Thorin",
+  "Uluga",
+  "Volkh",
+  "Vritra",
+  "Woden",
+  "Yoritomo",
+];
+
+// Include names split by whitespace (e.g. include "kimun" and "kamui")
+let break_words = [];
+charas.forEach(s => {
+  if (s.search(" ") != -1) {
+    break_words = break_words.concat(s.split(" "));
+  }
+});
+charas = charas.concat(break_words);
+
+const form = document.querySelector("#form");
+const output = document.querySelector("#output");
+
+form.addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const nChar = form["nChar"].value;
+  const regex_s = form["regex"].value;
+  const whitespace = form["whitespace"].value;
+
+  let ans = charas;
+  if (whitespace == true) {
+    ans = ans.map(s => s.replaceAll(" ", ""));
+  }
+
+  if (nChar > 0) {
+    ans = ans.filter(s => s.length == nChar);
+  }
+
+  try {
+    if (regex_s !== "") {
+      const regex = new RegExp(regex_s, "i"); // case insensitive
+      ans = ans.filter(s => s.match(regex));
+    }
+  } catch(e) {
+    output.textContent = e.toString();
+    return;
+  }
+
+  output.textContent = ans.join("\n");
+});
+
+</script>
+</html>
